@@ -44,6 +44,14 @@ export interface GameStats {
   morale: number;
   reputation: number;
   achievements: string[];
+  team: number;
+  innovation: number;
+  marketShare: number;
+  productQuality: number;
+  emergenciesResolved: number;
+  milestonesPassed: string[];
+  lastEventTime: number;
+  consecutiveGoodDecisions: number;
 }
 
 export interface Achievement {
@@ -59,4 +67,34 @@ export interface GameEnding {
   title: string;
   description: string;
   requirements: GameStats;
+}
+
+export interface EventTrigger {
+  type: 'stat_high' | 'stat_low' | 'random';
+  condition: (stats: GameStats) => boolean;
+  event: GameEvent;
+}
+
+export interface Opportunity {
+  id: string;
+  title: string;
+  description: string;
+  requiredStats: Partial<GameStats>;
+  choices: GameChoice[];
+  timeLimit: number;
+}
+
+export interface MilestoneEvent {
+  id: string;
+  condition: (stats: GameStats) => boolean;
+  title: string;
+  description: string;
+  effect: GameEffect;
+}
+
+export interface EmergencyEvent {
+  id: string;
+  title: string;
+  description: string;
+  choices: GameChoice[];
 }

@@ -88,7 +88,7 @@ export const EVENTS = [
       effect: { morale: 10, funding: 0, userBase: 5 }
     },
     negativeOutcome: {
-      text: '由于技术经验不足，产品开发进度缓慢，多次返工，团队有些沮丧。',
+      text: '由于技术经验不足，产品开发进度缓慢，多次返��，团队有些沮丧。',
       effect: { morale: -15, funding: -5, userBase: 0 }
     }
   },
@@ -235,7 +235,7 @@ export const ENDINGS = [
   {
     id: 'ipo_success',
     title: '成功上市',
-    description: '你的公司成功在纳斯达克上市，市值超过10亿美元！',
+    description: '你的公司成功在���斯达克上市，市值超过10亿美元！',
     requirements: { funding: 1000, userBase: 100, morale: 80 }
   },
   {
@@ -273,5 +273,336 @@ export const ACHIEVEMENTS = [
     description: '公司声望达到80',
     icon: '⭐',
     condition: (stats: GameStats) => stats.reputation >= 80
+  },
+  {
+    id: 'innovation_leader',
+    title: '创新领袖',
+    description: '创新指数达到80',
+    icon: '🎯',
+    condition: (stats: GameStats) => stats.innovation >= 80
+  },
+  {
+    id: 'market_dominator',
+    title: '市场领导者',
+    description: '市场份额超过40%',
+    icon: '👑',
+    condition: (stats: GameStats) => stats.marketShare >= 40
+  },
+  {
+    id: 'quality_master',
+    title: '质量标杆',
+    description: '产品质量达到90',
+    icon: '⭐',
+    condition: (stats: GameStats) => stats.productQuality >= 90
+  },
+  {
+    id: 'crisis_manager',
+    title: '危机管理大师',
+    description: '成功处理3次紧急事件',
+    icon: '🛡️',
+    condition: (stats: GameStats) => stats.emergenciesResolved >= 3
+  },
+  {
+    id: 'team_builder',
+    title: '团队打造者',
+    description: '团队规模达到50人',
+    icon: '👥',
+    condition: (stats: GameStats) => stats.team >= 50
+  },
+  {
+    id: 'perfect_product',
+    title: '完美主义者',
+    description: '产品质量和创新指数都达到90以上',
+    icon: '💎',
+    condition: (stats: GameStats) => stats.productQuality >= 90 && stats.innovation >= 90
+  }
+];
+
+export const OPPORTUNITIES = [
+  {
+    id: 'acquisition_offer',
+    title: '收购提案',
+    description: '一家大型科技公司对你的创业项目表示了强烈的收购意向',
+    requiredStats: {
+      userBase: 30,
+      reputation: 60
+    },
+    timeLimit: 3,
+    choices: [
+      {
+        text: '接受收购，实现快速退出',
+        requiredTraits: ['negotiation'],
+        outcome: {
+          text: '经过巧妙谈判，达成了一个令人满意的收购协议！',
+          effect: { 
+            funding: 500,
+            morale: 10,
+            reputation: 20,
+            marketShare: -10
+          }
+        }
+      },
+      {
+        text: '婉拒提议，保持独立发展',
+        requiredTraits: ['leadership'],
+        outcome: {
+          text: '团队备受鼓舞，士气高涨，对公司未来充满信心！',
+          effect: {
+            funding: -10,
+            morale: 30,
+            reputation: 10,
+            innovation: 20
+          }
+        }
+      },
+      {
+        text: '拖延谈判，同时寻求其他机会',
+        requiredTraits: ['business'],
+        outcome: {
+          text: '巧妙周旋引发了其他公司的兴趣，竞争激烈提升了估值！',
+          effect: {
+            funding: 200,
+            reputation: 15,
+            marketShare: 5
+          }
+        }
+      }
+    ]
+  }
+];
+
+export const RANDOM_EVENTS = [
+  {
+    type: 'stat_high',
+    condition: (stats: GameStats) => stats.userBase >= 50,
+    event: {
+      id: 'viral_growth',
+      month: 0,
+      title: '病毒式增长',
+      description: '你的产品突然在社交媒体上爆火！',
+      requiredTraits: ['marketing'],
+      positiveOutcome: {
+        text: '团队快速响应，完美把握住了增长机会！',
+        effect: {
+          userBase: 30,
+          reputation: 20,
+          morale: 15,
+          marketShare: 10
+        }
+      },
+      negativeOutcome: {
+        text: '服务器不堪重负，错失了大好机会...',
+        effect: {
+          userBase: 5,
+          reputation: -10,
+          morale: -10
+        }
+      }
+    }
+  },
+  {
+    type: 'stat_high',
+    condition: (stats: GameStats) => stats.funding >= 100,
+    event: {
+      id: 'talent_attraction',
+      month: 0,
+      title: '人才青睐',
+      description: '公司的发展前景吸引了顶尖人才的关注！',
+      requiredTraits: ['leadership'],
+      positiveOutcome: {
+        text: '成功招募到行业专家加入团队！',
+        effect: {
+          team: 20,
+          morale: 15,
+          innovation: 10,
+          funding: -20,
+          userBase: 0
+        }
+      },
+      negativeOutcome: {
+        text: '未能给出有竞争力的待遇，人才流失了...',
+        effect: {
+          team: -5,
+          morale: -10,
+          innovation: -5,
+          funding: 0,
+          userBase: 0
+        }
+      }
+    }
+  },
+  {
+    type: 'stat_low',
+    condition: (stats: GameStats) => stats.morale <= 30,
+    event: {
+      id: 'team_crisis',
+      month: 0,
+      title: '团队危机',
+      description: '核心团队成员对公司前景产生质疑...',
+      requiredTraits: ['leadership', 'pressure'],
+      positiveOutcome: {
+        text: '通过坦诚沟通和有力领导，成功稳定了军心！',
+        effect: {
+          morale: 30,
+          team: 5,
+          funding: 0,
+          userBase: 0,
+          reputation: 10
+        }
+      },
+      negativeOutcome: {
+        text: '几位核心成员选择离职，团队士气低落...',
+        effect: {
+          morale: -20,
+          team: -15,
+          funding: 0,
+          userBase: -5,
+          reputation: -15
+        }
+      }
+    }
+  },
+  {
+    type: 'random',
+    condition: (stats: GameStats) => true,
+    event: {
+      id: 'market_opportunity',
+      month: 0,
+      title: '市场机遇',
+      description: '一个新的细分市场突然出现！',
+      requiredTraits: ['business', 'execution'],
+      positiveOutcome: {
+        text: '快速切入新市场，抢占先机！',
+        effect: {
+          marketShare: 15,
+          userBase: 20,
+          funding: -10,
+          morale: 10,
+          innovation: 5
+        }
+      },
+      negativeOutcome: {
+        text: '决策不够果断，错失良机...',
+        effect: {
+          marketShare: -5,
+          morale: -5,
+          reputation: -5,
+          funding: 0,
+          userBase: 0
+        }
+      }
+    }
+  }
+];
+
+export const PRODUCT_UPDATES = [
+  {
+    id: 'major_update',
+    title: '重大版本更新',
+    description: '团队准备发布一个重大产品更新',
+    choices: [
+      {
+        text: '专注核心功能优化',
+        requiredTraits: ['tech'],
+        outcome: {
+          text: '产品性能和稳定性大幅提升，用户满意度上升！',
+          effect: {
+            productQuality: 20,
+            userBase: 10,
+            reputation: 5
+          }
+        }
+      },
+      {
+        text: '添加创新功能',
+        requiredTraits: ['innovation'],
+        outcome: {
+          text: '新功能引起行业轰动，产品创新性获得认可！',
+          effect: {
+            innovation: 30,
+            reputation: 15,
+            marketShare: 10
+          }
+        }
+      }
+    ]
+  }
+];
+
+export const MILESTONE_EVENTS = [
+  {
+    id: 'first_million_users',
+    condition: (stats: GameStats) => stats.userBase >= 100,
+    title: '首个百万用户',
+    description: '产品用户数突破100万大关！',
+    effect: {
+      reputation: 20,
+      morale: 20,
+      funding: 50,
+      marketShare: 10,
+      innovation: 5
+    }
+  },
+  {
+    id: 'industry_award',
+    condition: (stats: GameStats) => stats.innovation >= 60,
+    title: '行业大奖',
+    description: '公司获得年度最具创新力企业奖！',
+    effect: {
+      reputation: 30,
+      morale: 15,
+      funding: 20,
+      marketShare: 5,
+      innovation: 10
+    }
+  }
+];
+
+export const EMERGENCY_EVENTS = [
+  {
+    id: 'security_breach',
+    title: '安全漏洞',
+    description: '系统被发现存在严重的安全漏洞！',
+    choices: [
+      {
+        text: '立即关闭系统进行修复',
+        requiredTraits: ['tech'],
+        outcome: {
+          text: '虽然造成短期损失，但及时控制住了危机！',
+          effect: {
+            userBase: -10,
+            reputation: 5,
+            funding: -20,
+            productQuality: 10
+          }
+        }
+      },
+      {
+        text: '边运营边修复',
+        requiredTraits: ['pressure'],
+        outcome: {
+          text: '在压力下完成了修复，但付出了代价...',
+          effect: {
+            userBase: -5,
+            reputation: -10,
+            funding: -10,
+            productQuality: 5
+          }
+        }
+      },
+      {
+        text: '公关危机处理',
+        requiredTraits: ['social'],
+        outcome: {
+          text: '成功安抚了用户情绪，为修复赢得了时间',
+          effect: {
+            reputation: -5,
+            funding: -30,
+            morale: 5,
+            productQuality: -5
+          }
+        }
+      }
+    ]
   }
 ]; 
