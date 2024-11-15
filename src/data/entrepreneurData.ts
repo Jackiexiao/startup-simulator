@@ -196,6 +196,38 @@ export const EVENTS = [
       text: '合作谈判破裂，前期投入的资源付诸东流。',
       effect: { morale: -20, funding: -30, userBase: 0 }
     }
+  },
+  {
+    id: 'investor_dinner',
+    month: 4,
+    title: '投资人晚宴',
+    description: '你受邀参加一个高端投资人晚宴，这是一个难得的社交机会',
+    requiredTraits: ['social', 'business'],
+    choices: [
+      {
+        text: '主动出击，与关键投资人深入交流',
+        requiredTraits: ['social'],
+        outcome: {
+          text: '你的社交能力让投资人印象深刻，获得了一个重要的投资机会！',
+          effect: { morale: 10, funding: 30, userBase: 0, reputation: 15 }
+        }
+      },
+      {
+        text: '专注推介项目，展示商业计划',
+        requiredTraits: ['business'],
+        outcome: {
+          text: '你的商业计划获得认可，但投资人希望看到更多进展',
+          effect: { morale: 5, funding: 0, userBase: 0, reputation: 5 }
+        }
+      },
+      {
+        text: '保持低调，观察学习',
+        outcome: {
+          text: '你获得了一些有用的行业信息，但错过了直接的投资机会',
+          effect: { morale: 0, funding: 0, userBase: 0, reputation: -5 }
+        }
+      }
+    ]
   }
 ];
 
@@ -217,5 +249,29 @@ export const ENDINGS = [
     title: '持续发展',
     description: '公司保持稳健经营，成为细分领域的隐形冠军',
     requirements: { funding: 200, userBase: 30, morale: 70 }
+  }
+];
+
+export const ACHIEVEMENTS = [
+  {
+    id: 'fast_growth',
+    title: '火箭式增长',
+    description: '用户数在一个月内增长超过50k',
+    icon: '🚀',
+    condition: (stats: GameStats) => stats.userBase >= 50
+  },
+  {
+    id: 'money_master',
+    title: '融资达人',
+    description: '公司资金达到1000万',
+    icon: '💰',
+    condition: (stats: GameStats) => stats.funding >= 1000
+  },
+  {
+    id: 'popular_startup',
+    title: '创业新星',
+    description: '公司声望达到80',
+    icon: '⭐',
+    condition: (stats: GameStats) => stats.reputation >= 80
   }
 ]; 

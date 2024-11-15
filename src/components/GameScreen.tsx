@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GameStats, GameEvent } from '../types/game';
-import { EVENTS } from '../data/entrepreneurData';
+import { GameStats, GameEvent, GameChoice } from '../types/game';
+import { EVENTS, ACHIEVEMENTS } from '../data/entrepreneurData';
 
 interface GameScreenProps {
   selectedTraits: string[];
@@ -15,25 +15,68 @@ export function GameScreen({ selectedTraits, onGameEnd }: GameScreenProps) {
     funding: 10,
     userBase: 0,
     morale: 100,
+    reputation: 50,
+    achievements: [],
   });
   const [isPlaying, setIsPlaying] = useState(true);
   const [completedEvents, setCompletedEvents] = useState<GameEvent[]>([]);
+  const [showingChoices, setShowingChoices] = useState(false);
+  const [currentChoices, setCurrentChoices] = useState<GameChoice[]>([]);
+  const [recentAchievement, setRecentAchievement] = useState<string | null>(null);
 
   // 检查是否满足事件的特质要求
   const meetsTraitRequirements = (event: GameEvent) => {
     return event.requiredTraits.some(trait => selectedTraits.includes(trait));
   };
 
+  // 检查成就
+  const checkAchievements = (stats: GameStats) => {
+    ACHIEVEMENTS.forEach(achievement => {
+      if (!stats.achievements.includes(achievement.id) && achievement.condition(stats)) {
+        setRecentAchievement(achievement.title);
+        setGameStats(prev => ({
+          ...prev,
+          achievements: [...prev.achievements, achievement.id]
+        }));
+        setTimeout(() => setRecentAchievement(null), 3000);
+      }
+    });
+  };
+
+  // 处理选择
+  const handleChoice = (choice: GameChoice) => {
+    setShowingChoices(false);
+    setGameStats(prev => ({
+      ...prev,
+      funding: Math.max(0, prev.funding + choice.outcome.effect.funding),
+      userBase: Math.max(0, prev.userBase + choice.outcome.effect.userBase),
+      morale: Math.max(0, Math.min(100, prev.morale + choice.outcome.effect.morale)),
+      reputation: Math.max(0, Math.min(100, prev.reputation + (choice.outcome.effect.reputation || 0))),
+    }));
+  };
+
   // 处理事件
   const handleEvent = (event: GameEvent) => {
+    if (event.choices) {
+      setCurrentChoices(event.choices);
+      setShowingChoices(true);
+      return;
+    }
+
     const hasRequiredTrait = meetsTraitRequirements(event);
     const outcome = hasRequiredTrait ? event.positiveOutcome : event.negativeOutcome;
     
-    setGameStats(prev => ({
-      funding: Math.max(0, prev.funding + outcome.effect.funding),
-      userBase: Math.max(0, prev.userBase + outcome.effect.userBase),
-      morale: Math.max(0, Math.min(100, prev.morale + outcome.effect.morale)),
-    }));
+    setGameStats(prev => {
+      const newStats = {
+        ...prev,
+        funding: Math.max(0, prev.funding + outcome.effect.funding),
+        userBase: Math.max(0, prev.userBase + outcome.effect.userBase),
+        morale: Math.max(0, Math.min(100, prev.morale + outcome.effect.morale)),
+        reputation: Math.max(0, Math.min(100, prev.reputation + (outcome.effect.reputation || 0))),
+      };
+      checkAchievements(newStats);
+      return newStats;
+    });
     
     setCompletedEvents(prev => [...prev, event]);
   };
@@ -67,21 +110,69 @@ export function GameScreen({ selectedTraits, onGameEnd }: GameScreenProps) {
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg">
-      <div className="flex justify-between items-center mb-6">
-        <div className="text-2xl font-bold">第 {currentMonth} 个月</div>
-        <div className="flex space-x-4">
-          <div className="px-4 py-2 bg-blue-100 rounded-lg">
-            资金: {gameStats.funding}万
-          </div>
-          <div className="px-4 py-2 bg-green-100 rounded-lg">
-            用户: {gameStats.userBase}k
-          </div>
-          <div className="px-4 py-2 bg-yellow-100 rounded-lg">
-            士气: {gameStats.morale}%
-          </div>
+      {/* 状态栏 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="p-3 bg-blue-100 rounded-lg text-center">
+          <div className="text-sm text-blue-600">资金</div>
+          <div className="text-xl font-bold text-blue-800">{gameStats.funding}万</div>
+        </div>
+        <div className="p-3 bg-green-100 rounded-lg text-center">
+          <div className="text-sm text-green-600">用户</div>
+          <div className="text-xl font-bold text-green-800">{gameStats.userBase}k</div>
+        </div>
+        <div className="p-3 bg-yellow-100 rounded-lg text-center">
+          <div className="text-sm text-yellow-600">士气</div>
+          <div className="text-xl font-bold text-yellow-800">{gameStats.morale}%</div>
+        </div>
+        <div className="p-3 bg-purple-100 rounded-lg text-center">
+          <div className="text-sm text-purple-600">声望</div>
+          <div className="text-xl font-bold text-purple-800">{gameStats.reputation}</div>
         </div>
       </div>
 
+      {/* 成就提示 */}
+      <AnimatePresence>
+        {recentAchievement && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="fixed top-4 right-4 bg-yellow-100 border-2 border-yellow-400 p-4 rounded-lg shadow-lg"
+          >
+            <div className="text-yellow-800">
+              <div className="font-bold">🏆 解锁成就</div>
+              <div>{recentAchievement}</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 选择界面 */}
+      {showingChoices && (
+        <div className="mb-6">
+          <h3 className="text-xl font-bold mb-4">做出选择:</h3>
+          <div className="space-y-3">
+            {currentChoices.map((choice, index) => (
+              <button
+                key={index}
+                onClick={() => handleChoice(choice)}
+                className={`w-full p-4 text-left rounded-lg transition-colors ${
+                  choice.requiredTraits?.some(trait => selectedTraits.includes(trait))
+                    ? 'bg-green-50 hover:bg-green-100'
+                    : 'bg-gray-50 hover:bg-gray-100'
+                }`}
+              >
+                <div className="font-medium mb-1">{choice.text}</div>
+                {choice.requiredTraits?.some(trait => selectedTraits.includes(trait)) && (
+                  <div className="text-sm text-green-600">✨ 特质加成</div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 事件历史 */}
       <div className="space-y-4 mb-6">
         <h3 className="font-bold text-xl">创业历程:</h3>
         <div className="space-y-4">
