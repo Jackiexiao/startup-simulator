@@ -1,22 +1,40 @@
-export interface GameEvent {
+export interface Trait {
   id: string;
-  text: string;
-  type: 'positive' | 'negative' | 'neutral';
-  energyEffect: number;
-  progressEffect: number;
+  name: string;
+  icon: string;
+  description: string;
 }
 
-export interface Achievement {
+export interface GameEvent {
   id: string;
   title: string;
   description: string;
-  icon: string;
-  unlocked: boolean;
+  requiredTraits: string[];
+  positiveOutcome: {
+    text: string;
+    effect: GameEffect;
+  };
+  negativeOutcome: {
+    text: string;
+    effect: GameEffect;
+  };
+}
+
+export interface GameEffect {
+  morale: number;
+  funding: number;
+  userBase: number;
 }
 
 export interface GameStats {
-  bugsFixed: number;
-  coffeesDrunk: number;
-  linesOfCode: number;
-  maxCombo: number;
+  funding: number;
+  userBase: number;
+  morale: number;
+}
+
+export interface GameEnding {
+  id: string;
+  title: string;
+  description: string;
+  requirements: GameStats;
 }
